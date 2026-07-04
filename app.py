@@ -9,14 +9,14 @@ from utils.data_manager import (
 from utils.analytics import (
     historico_para_dataframe, metricas_gerais, metricas_semanais,
     metricas_mensais, frequencia_por_dia_semana, calcular_streak,
-    evolucao_acumulada, gerar_insights,
+    evolucao_acumulada, gerar_insights, prever_tempos_prova,
 )
 from utils.charts import (
     grafico_quilometragem_semanal, grafico_quilometragem_mensal,
     grafico_evolucao_pace, grafico_frequencia_semanal,
     grafico_distribuicao_distancia, grafico_acumulado,
     grafico_distribuicao_tipo, grafico_evolucao_distancia,
-    grafico_pace_vs_distancia,
+    grafico_pace_vs_distancia, grafico_previsao_provas,
 )
 from router import classificar, extrair_dados_corrida
 from ai_client import AIClient
@@ -328,6 +328,7 @@ def navegacao_sidebar():
                 "➕  Registrar Treino",
                 "📋  Histórico",
                 "📈  Análise",
+                "🏁  Previsão de Provas",
                 "💡  Insights",
                 "🤖  Chatbot",
                 "📚  Conteúdo",
@@ -759,6 +760,45 @@ def pagina_analise():
             col2.metric(k, v)
 
 
+def pagina_previsao():
+    st.markdown('<div class="section-header">🏁 Previsão de Tempos de Prova</div>', unsafe_allow_html=True)
+
+    historico = carregar_historico()
+    df = historico_para_dataframe(historico)
+
+    if df.empty:
+        st.info("Registre corridas para gerar sua previsão de provas.")
+        return
+
+    previsao = prever_tempos_prova(df)
+    if previsao is None:
+        st.info("Registre ao menos uma corrida com distância e pace válidos (≥ 1 km) para gerar a previsão.")
+        return
+
+    st.markdown(f"""
+    <div class="card" style="margin-bottom:1.5rem;">
+        <div style="color:#a0aec0; font-size:0.9rem;">
+            Previsão calculada a partir do seu melhor desempenho registrado:
+            <b style="color:#FF6B35;">{previsao['baseline_distancia']} km</b> a
+            <b style="color:#00D4AA;">{previsao['baseline_pace_fmt']} min/km</b>
+            em {previsao['baseline_data'].strftime('%d/%m/%Y')}.
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.plotly_chart(grafico_previsao_provas(previsao["previsoes"]), use_container_width=True)
+
+    cols = st.columns(len(previsao["previsoes"]))
+    for col, p in zip(cols, previsao["previsoes"]):
+        col.metric(p["prova"], p["tempo_fmt"], help=f"Pace previsto: {p['pace_fmt']} min/km")
+
+    st.caption(
+        "⚠️ Estimativa baseada na fórmula de Riegel (T2 = T1 × (D2/D1)^1.06), "
+        "amplamente usada em ciência do esporte para prever desempenho entre distâncias. "
+        "Resultados reais variam conforme treino específico, clima e estratégia de prova."
+    )
+
+
 def pagina_insights():
     st.markdown('<div class="section-header">💡 Insights Automáticos</div>', unsafe_allow_html=True)
 
@@ -1039,6 +1079,7 @@ def main():
         "➕  Registrar Treino": pagina_registrar,
         "📋  Histórico": pagina_historico,
         "📈  Análise": pagina_analise,
+        "🏁  Previsão de Provas": pagina_previsao,
         "💡  Insights": pagina_insights,
         "🤖  Chatbot": pagina_chatbot,
         "📚  Conteúdo": pagina_conteudo,

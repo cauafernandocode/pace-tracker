@@ -202,6 +202,25 @@ def grafico_pace_vs_distancia(df):
     return _aplicar_layout(fig, "Pace vs Distância")
 
 
+def grafico_previsao_provas(previsoes):
+    if not previsoes:
+        return _fig_vazio("Sem dados suficientes para previsão")
+    df = pd.DataFrame(previsoes)
+    fig = go.Figure()
+    fig.add_trace(go.Bar(
+        x=df["prova"],
+        y=df["pace_num"],
+        marker=dict(color=COLORS["gradient"][:len(df)], cornerradius=6),
+        text=df["tempo_fmt"],
+        textposition="outside",
+        textfont=dict(color="#FAFAFA", size=13),
+        customdata=df["tempo_fmt"],
+        hovertemplate="<b>%{x}</b><br>Pace previsto: %{y:.2f} min/km<br>Tempo estimado: %{customdata}<extra></extra>",
+    ))
+    fig.update_yaxes(title_text="Pace Previsto (min/km)")
+    return _aplicar_layout(fig, "Previsão de Tempos por Distância", height=400)
+
+
 def _fig_vazio(msg="Sem dados disponíveis"):
     fig = go.Figure()
     fig.add_annotation(

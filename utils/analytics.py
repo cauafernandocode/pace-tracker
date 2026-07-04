@@ -1,6 +1,14 @@
 import pandas as pd
 from datetime import datetime, timedelta
-from utils.data_manager import parse_pace, formatar_pace
+from utils.data_manager import parse_pace, formatar_pace, formatar_tempo
+
+DISTANCIAS_PROVA = [
+    ("5K", 5.0),
+    ("10K", 10.0),
+    ("21K", 21.0975),
+    ("42K", 42.195),
+]
+EXPOENTE_RIEGEL = 1.06
 
 
 def historico_para_dataframe(historico):
@@ -126,6 +134,41 @@ def evolucao_acumulada(df):
     df_sorted = df.sort_values("data").copy()
     df_sorted["km_acumulado"] = df_sorted["distancia"].cumsum().round(1)
     return df_sorted[["data", "km_acumulado"]]
+
+
+def prever_tempos_prova(df):
+    """Prevê tempos de prova para distâncias-padrão a partir do melhor
+    desempenho registrado, usando a fórmula de Riegel: T2 = T1 * (D2/D1)^1.06."""
+    if df.empty:
+        return None
+
+    candidatos = df[(df["pace_num"] > 0) & (df["distancia"] >= 1)]
+    if candidatos.empty:
+        return None
+
+    baseline = candidatos.loc[candidatos["pace_num"].idxmin()]
+    d1 = baseline["distancia"]
+    t1 = baseline["pace_num"] * d1
+
+    previsoes = []
+    for nome, d2 in DISTANCIAS_PROVA:
+        t2 = t1 * (d2 / d1) ** EXPOENTE_RIEGEL
+        pace2 = t2 / d2
+        previsoes.append({
+            "prova": nome,
+            "distancia": d2,
+            "tempo_min": round(t2, 2),
+            "tempo_fmt": formatar_tempo(t2),
+            "pace_num": round(pace2, 2),
+            "pace_fmt": formatar_pace(pace2),
+        })
+
+    return {
+        "baseline_distancia": round(d1, 2),
+        "baseline_pace_fmt": formatar_pace(baseline["pace_num"]),
+        "baseline_data": baseline["data"],
+        "previsoes": previsoes,
+    }
 
 
 def gerar_insights(df):

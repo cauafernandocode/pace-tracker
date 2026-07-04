@@ -17,6 +17,18 @@ def formatar_pace(pace):
     return f"{minutos}:{segundos:02d}"
 
 
+def formatar_tempo(minutos):
+    if minutos is None or minutos <= 0:
+        return "0:00"
+    total_segundos = int(round(minutos * 60))
+    horas = total_segundos // 3600
+    mins = (total_segundos % 3600) // 60
+    segs = total_segundos % 60
+    if horas > 0:
+        return f"{horas}:{mins:02d}:{segs:02d}"
+    return f"{mins}:{segs:02d}"
+
+
 def parse_pace(pace_str):
     if not pace_str or pace_str == "0:00":
         return 0.0
