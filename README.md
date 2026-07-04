@@ -21,6 +21,7 @@ Built with Python, Streamlit, Pandas and Plotly.
 ![Plotly](https://img.shields.io/badge/Plotly-6.8-3F4F75?style=for-the-badge&logo=plotly&logoColor=white)
 ![Pandas](https://img.shields.io/badge/Pandas-3.0-150458?style=for-the-badge&logo=pandas&logoColor=white)
 ![Status](https://img.shields.io/badge/Status-In%20Development-00D4AA?style=for-the-badge)
+![Tests](https://github.com/cauafdev/pace-tracker/actions/workflows/tests.yml/badge.svg)
 
 ---
 
@@ -30,9 +31,9 @@ Pace Tracker started as a simple terminal pace calculator and has been progressi
 
 **What this project demonstrates:**
 
-- **Software engineering** — modular architecture, separation of concerns, progressive refactoring across versions
+- **Software engineering** — modular architecture, separation of concerns, progressive refactoring across versions, automated test suite with CI
 - **Data analysis** — time-based aggregations, trend calculations, automatic insight generation with Pandas
-- **Data visualization** — 9 interactive chart types with Plotly, dynamic KPIs, responsive layout
+- **Data visualization** — 10 interactive chart types with Plotly, dynamic KPIs, responsive layout
 - **Web development** — modern Streamlit interface, custom dark theme, professional UI/UX design
 - **AI integration** — hybrid chatbot combining regex-based routing, JSON knowledge base and local LLM (Ollama)
 
@@ -58,6 +59,11 @@ Pace Tracker started as a simple terminal pace calculator and has been progressi
 - Distance distribution histogram and run type breakdown
 - Weekly and monthly summary tables
 - Top performances ranking
+
+### 🏁 Race Time Predictor
+- Predicts finish times for 5K, 10K, half marathon and marathon from your best recorded pace
+- Based on Riegel's exponential formula (T2 = T1 × (D2/D1)^1.06), a model used in sports science to project performance across distances
+- Visualizes the predicted pacing curve with Plotly
 
 ### 💡 Automatic Insights
 Engine that reads your data and generates findings like:
@@ -90,10 +96,13 @@ pace-tracker/
 ├── utils/
 │   ├── data_manager.py         # Data I/O, JSON persistence, formatters
 │   ├── analytics.py            # Analytics engine — metrics, trends, insights
-│   └── charts.py               # Plotly chart generators (9 chart types)
+│   └── charts.py               # Plotly chart generators (10 chart types)
 │
 ├── router.py                   # Message intent classifier (regex patterns)
 ├── ai_client.py                # Ollama LLM client (local AI)
+│
+├── tests/                      # Pytest suite (router, analytics, data I/O, AI client)
+├── .github/workflows/          # CI — runs the test suite on every push/PR
 │
 ├── .streamlit/config.toml      # Custom dark theme configuration
 ├── conhecimento.json           # Knowledge base (10 running topics)
@@ -140,6 +149,17 @@ This project was built incrementally. Each version introduced new concepts and t
 | **v1.2** | Chatbot with JSON knowledge base | JSON data structures, keyword search, persistence |
 | **v1.3** | Local AI integration via Ollama | REST API consumption, LLM integration, error handling |
 | **v2.0** | **Full web app with Streamlit** | Streamlit, Pandas, Plotly, data analysis, UI/UX design |
+
+---
+
+## Testing
+
+The core logic — intent routing, JSON persistence, analytics and the AI client — is covered by a pytest suite (59 tests), running automatically on every push via GitHub Actions.
+
+```bash
+pip install -r requirements-dev.txt
+pytest -v
+```
 
 ---
 
